@@ -1,48 +1,57 @@
 # LLM-ECoG Pipeline
 
-This repository contains scripts to process ECoG data aligned with LLM embeddings and perform ridge regression analyses.
+This repository provides a pipeline to align ECoG neural data with LLM embeddings (Mistral-7B). It includes preprocessing, embedding generation, data formatting, and regression analyses.
 
-## Requirements
+## Prerequisites
 
-Before running the pipeline, you need:
+You need the following files:
 
-- A `.mat` file containing high-gamma ECoG responses to a speech stimulus.
-- Word-level alignments of your transcripts in JSON format.
-- The `.wav` files of your speech stimuli.
+- A `.mat` file containing the high-gamma neural response to a speech stimulus.
+- JSON files with word-level alignments of your transcripts.
+- The `.wav` files of your stimuli.
 
-> **Note:** Make sure to adjust all paths in the scripts to match your local folder structure.
+Make sure to change the paths in the scripts accordingly.
 
 ## Pipeline Steps
 
-Run the following scripts in sequence to process your data:
+1. **Generate Word Embeddings per Trial**  
+   Run `CreateWordEmbeddingPerTrial.py`.  
+   This script:
+   - Loads neural data and trials' word-level alignments.
+   - Generates embeddings for each trial using **Mistral-7B**.
+   - Saves embeddings per trial under the `embeddings/` directory.  
 
-1. **Create Word Embeddings per Trial**  
-   Run `CreateWordEmbeddingPerTrial.py` to generate embeddings for each trial of your experiment based on your transcripts.  
-   - Loads neural data and trials' word-level alignments.  
-   - Normalizes neural data.  
-   - Prepares embeddings using the Mistral-7B model for a given context length.  
-   - Saves word embeddings per trial in `embeddings/`.
+   **Dependencies:** `WordEmbeddingGenerator.py` is used here to generate embeddings and handle token-to-word alignment, including removal of repeated words and context length control.
 
-2. **Align Neural Data with LLM Embeddings**  
-   Run `ProcessECoGEmbeddings.py` to align neural responses with word-level embeddings.  
-   - Creates word-level alignment between neural data and LLM embeddings.  
-   - Saves aligned embeddings per trial, layer, and subject in `AlignedData/AlignedEmbeddings/`.  
-   - Saves aligned neural responses per trial, electrode, and subject in `AlignedData/AlignedNeuralData/`.
+2. **Align Neural Data with Embeddings**  
+   Run `ProcessECoGEmbeddings.py`.  
+   This script:
+   - Loads neural data and the embeddings from step 1.
+   - Normalizes neural data.
+   - Aligns neural responses with word embeddings, considering subject-specific electrodes and lags.
+   - Saves aligned embeddings under `AlignedData/AlignedEmbeddings/` and aligned neural responses under `AlignedData/AlignedNeuralData/`.
 
-3. **Reformat Data for Regression**  
-   Run `ReformatDataForRegression.py` to reshape and organize the aligned embeddings and neural responses into regression-ready files.  
-   - Saves `.npy` files per trial, per layer, and per subject in `data_formatted_regression/`.
+3. **Format Data for Regression**  
+   Run `ReformatDataForRegression.py`.  
+   This script:
+   - Iterates over subjects, layers, and trials.
+   - Loads aligned embeddings and neural responses.
+   - Structures them into `.npy` files suitable for regression analyses.
+   - Saves formatted data under `data_formatted_regression/`.
 
-4. **Run Ridge Regression**  
-   Run `RidgeRegression.py` to perform ridge regression analyses linking the regression-ready embeddings to neural responses.  
-   - Iterates over context lengths, subjects, and layers.  
-   - Performs leave-one-trial-out cross-validation.  
-   - Runs ridge regression with bootstrap-based model selection (`ridge_utils.bootstrap_ridge`).  
-   - Saves raw trial-by-trial correlation results per subject in `results_regression/`.
+4. **Ridge Regression**  
+   Run `RidgeRegression.py`.  
+   This script:
+   - Performs leave-one-out cross-validation across trials.
+   - Runs ridge regression with bootstrap-based model selection.
+   - Iterates over subjects and layers.
+   - Saves trial-by-trial correlation results per subject under `results_regression/`.
 
-**Command Example for all steps:**
-```bash
-python CreateWordEmbeddingPerTrial.py
-python ProcessECoGEmbeddings.py
-python ReformatDataForRegression.py
-python RidgeRegression.py
+## Notes
+
+- Large files (like `.mat` or `.npy`) may exceed GitHub limits. Consider using Git LFS for storage.
+- Do not commit API tokens or secrets. Pushes containing secrets are blocked by GitHub push protection.
+- Scripts assume a certain trial and layer organization; adjust paths and parameters as needed.
+
+## Example Folder Structure
+
