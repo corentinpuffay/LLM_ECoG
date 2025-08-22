@@ -18,10 +18,9 @@ Run the following scripts in sequence to process your data:
 
 1. **Create Word Embeddings per Trial**  
    Run `CreateWordEmbeddingPerTrial.py` to generate embeddings for each trial of your experiment based on your transcripts.  
-   - Loads neural data and trial labels.  
-   - Generates auditory spectrograms for attended/unattended stimuli.  
-   - Normalizes neural and spectrogram data.  
-   - Prepares embeddings using the Mistral-7B model for the specified context lengths.  
+   - Loads neural data and trials' word-level alignments.  
+   - Normalizes neural data.  
+   - Prepares embeddings using the Mistral-7B model for a given context length.  
    - Saves word embeddings per trial in `embeddings/`.
 
 2. **Align Neural Data with LLM Embeddings**  
@@ -37,7 +36,7 @@ Run the following scripts in sequence to process your data:
 4. **Run Ridge Regression**  
    Run `RidgeRegression.py` to perform ridge regression analyses linking the regression-ready embeddings to neural responses.  
    - Iterates over context lengths, subjects, and layers.  
-   - Performs leave-one-out cross-validation across trials.  
+   - Performs leave-one-trial-out cross-validation.  
    - Runs ridge regression with bootstrap-based model selection (`ridge_utils.bootstrap_ridge`).  
    - Saves raw trial-by-trial correlation results per subject in `results_regression/`.
 
