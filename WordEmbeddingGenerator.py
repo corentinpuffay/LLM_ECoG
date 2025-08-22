@@ -6,8 +6,7 @@ This script generates word-aligned embeddings from text transcripts using
 Mistral-7B. Includes options for context length control and removal of 
 consecutive word repetitions.
 
-Author: Your Name
-License: MIT
+Author: Corentin Puffay
 """
 
 # ===============================
@@ -169,18 +168,16 @@ def generate_embedding_mistral(transcript, list_idx_duplicated, context_len, ful
         Dictionary with hidden states, logits, and alignments.
     """
     model = AutoModelForCausalLM.from_pretrained(
-        "mistralai/Mistral-7B-v0.1", device_map="auto", offload_folder="save_folder"
+        "mistralai/Mistral-7B-v0.1", device_map="auto", offload_folder="save_folder", force_download=True
     )
     tokenizer = AutoTokenizer.from_pretrained(
-        "mistralai/Mistral-7B-v0.1", unk_token="<unk>", bos_token="<s>", eos_token="</s>"
+        "mistralai/Mistral-7B-v0.1", unk_token="<unk>", bos_token="<s>", eos_token="</s>", use_fast=True, force_download=True
     )
 
-    transcript_new, indices = remove_consecutive_repetitions_with_indices(transcript)
-    np.save(f'repeated_words_unattended_last/repeated_word_indices_trial_{idx_trial+1}.npy', np.array(indices))
 
-    inputs = tokenizer(transcript_new, return_offsets_mapping=True)
+    inputs = tokenizer(transcript, return_offsets_mapping=True)
     tks, pos = inputs['input_ids'][1:], inputs['offset_mapping']
-    words = get_words(tks, pos, transcript_new, transcript_new, tokenizer)
+    words = get_words(tks, pos, transcript, transcript, tokenizer)
     words_tokens = get_indices(words)
 
     truncated_inputs = {
@@ -233,7 +230,7 @@ def generate_embedding_mistral(transcript, list_idx_duplicated, context_len, ful
             'hidden_states': ds_embedding_corrected,
             'logits': logits,
             'alignments': words_tokens,
-        }, len(indices)
+        }
 
 
 # ===============================
