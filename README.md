@@ -47,11 +47,3 @@ Make sure to change the paths in the scripts accordingly.
    - Iterates over subjects and layers.
    - Saves trial-by-trial correlation results per subject under `results_regression/`.
 
-## Notes
-
-- Large files (like `.mat` or `.npy`) may exceed GitHub limits. Consider using Git LFS for storage.
-- Do not commit API tokens or secrets. Pushes containing secrets are blocked by GitHub push protection.
-- Scripts assume a certain trial and layer organization; adjust paths and parameters as needed.
-
-## Example Folder Structure
-
